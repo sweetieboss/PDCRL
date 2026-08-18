@@ -1,0 +1,29 @@
+name: hsm_pcvrp
+
+capacity_min_m: 10000
+capacity_max_m: 50000
+
+width_up_penalty: 5.0
+width_down_penalty: 1.0
+width_step_allow_mm: 100.0
+gauge_penalty: 50.0
+gauge_tol_mm: 0.5
+hardness_penalty: 30.0
+hardness_tol: 1.0
+energy_penalty: 20.0
+prize_base: 200.0
+
+width_min_mm: 800
+width_max_mm: 1600
+gauge_min_mm: 1.0
+gauge_max_mm: 12.7
+hardness_min: 1
+hardness_max: 5
+num_grades: 8
+priority_max: 3
+
+w_transition: 1.0
+w_unscheduled: 1.0
+w_energy: 1.0
+w_rollchange: 1.0
+roll_change_cost: 1000.0

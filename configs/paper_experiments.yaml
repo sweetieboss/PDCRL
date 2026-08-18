@@ -1,0 +1,109 @@
+protocol_version: pdcrl-paper-release-v1
+protocol_status: frozen
+process: configs/process/hsm_pcvrp.yaml
+training_manifest: data/training/manifest.json
+validation_manifest: data/validation/manifest.json
+test_manifest: data/test/manifest.json
+
+scales: [151, 271, 331, 600, 1000, 2000]
+objective_weights: [1.0, 1.0, 1.0, 1.0]
+training_parents_per_scale: 20
+development_parents_per_scale: 3
+test_batches_per_scale: 10
+
+stage_scale_groups:
+  151: [[25, 30, 35], [75, 95, 115], [151]]
+  271: [[25, 30, 35], [75, 95, 115], [151], [271]]
+  331: [[25, 30, 35], [75, 95, 115], [151, 271], [331]]
+  600: [[25, 30, 35], [75, 95, 115], [151, 271, 331], [600]]
+  1000: [[25, 30, 35], [75, 95, 115], [151, 271, 331], [600], [1000]]
+  2000: [[25, 30, 35], [75, 95, 115], [151, 271, 331], [1000], [2000]]
+
+model:
+  d_model: 160
+  n_heads: 8
+  n_layers: 3
+  clip: 10.0
+  lr: 0.0003
+  lr_final: 0.00001
+  entropy_coef: 0.01
+  grad_clip: 1.0
+  rich_ctx: true
+  num_starts_by_scale: {151: 500, 271: 500, 331: 500, 600: 500, 1000: 500, 2000: 192}
+
+validation:
+  eval_every_seconds: 480.0
+  eval_starts: 64
+  normalization: greedy_objective
+  aggregation: normalized_median
+
+methods:
+  pdcrl:
+    scales: [151, 271, 331, 600, 1000, 2000]
+    seeds: [0]
+    intermediate_cap_seconds: 1800.0
+    target_cap_seconds: {151: 57600.0, 271: 57600.0, 331: 57600.0, 600: 57600.0, 1000: 57600.0, 2000: 43200.0}
+    patience_evals: 6
+    plateau_relative_improvement: 0.005
+    curriculum_peak_lr: 0.00015
+    crossfade_seconds: 600.0
+    divergence_guard_factor: 1.5
+  direct:
+    scales: [1000, 2000]
+    seeds: [0]
+    target_cap_seconds: {1000: 57600.0, 2000: 43200.0}
+    patience_evals: 6
+    plateau_relative_improvement: 0.005
+    divergence_guard_factor: 1.5
+  pomo:
+    scales: [151, 271, 331, 600, 1000, 2000]
+    seeds: [0]
+    d_model: 128
+    n_heads: 8
+    n_layers: 6
+    num_starts: 192
+    learning_rate: 0.0001
+    weight_decay: 0.000001
+    entropy_coef: 0.0
+    fixed_budget_seconds: 28549.062964
+  scale_only:
+    scales: [1000, 2000]
+    seeds: [0, 1, 2]
+    learning_rate: 0.0001
+    total_budget_seconds: {1000: 27913.222033912898, 2000: 27009.826383101055}
+    stage_allocation: equal_wall_clock
+    prefix_stage_instance_names:
+      1000:
+        - [scale_only_curriculum_r00_n0025, scale_only_curriculum_r00_n0030, scale_only_curriculum_r00_n0035]
+        - [scale_only_curriculum_r00_n0075, scale_only_curriculum_r00_n0095, scale_only_curriculum_r00_n0115]
+        - [scale_only_curriculum_r00_n0151, scale_only_curriculum_r00_n0271, scale_only_curriculum_r00_n0331]
+        - [scale_only_curriculum_r00_n0600]
+      2000:
+        - [scale_only_curriculum_r00_n0025, scale_only_curriculum_r00_n0030, scale_only_curriculum_r00_n0035]
+        - [scale_only_curriculum_r00_n0075, scale_only_curriculum_r00_n0095, scale_only_curriculum_r00_n0115]
+        - [scale_only_curriculum_r00_n0151, scale_only_curriculum_r00_n0271, scale_only_curriculum_r00_n0331]
+        - [scale_only_curriculum_r00_n1000]
+
+local_search:
+  neighborhoods: [insert, relocate, merge, swap, two_opt]
+  hard_cap_seconds: 120.0
+
+baselines:
+  grasp:
+    starts: 30
+    restricted_candidate_list: 3
+    local_search_seconds_per_start: 60.0
+  nsga2:
+    population: 200
+    generations: 2000
+  alns:
+    iterations_per_segment: 1000
+    stale_segments: 5
+    relative_improvement: 0.001
+    stop_metric: scalar
+    max_segments: 1000
+    destroy_fraction: [0.1, 0.3]
+    reaction_factor: 0.2
+    cooling_rate: 0.9995
+    initial_temperature_fraction: 0.02
+    wall_clock_guard_seconds: {151: 14400.0, 271: 43200.0, 331: 43200.0, 600: 86400.0, 1000: 129600.0, 2000: 259200.0}

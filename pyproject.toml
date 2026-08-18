@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdcrl"
+version = "1.0.0"
+description = "Process-Driven Curriculum Reinforcement Learning for hot-rolling batch scheduling"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "PDCRL authors" }]
+dependencies = [
+    "gymnasium>=0.29",
+    "numpy>=1.24",
+    "omegaconf>=2.3",
+    "pandas>=2.0",
+    "pymoo>=0.6",
+    "torch>=2.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
